@@ -1,0 +1,185 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#define MAX_CMD_LEN 255
+#define MAX_ARGS 64
+#define PROMPT "simple_shell$ "
+#define DELIM " \t\r\n\a"
+char *_getenv(const char *name);
+char *_strcat(char *dest, char *src);
+int _strlen(char *s);
+char *search_path(char **argv);
+/**
+* main - Entry point
+*
+* Return: Always 0 (Success)
+*/
+int main(void)
+{
+char cmd[MAX_CMD_LEN];
+char *argv[MAX_ARGS];
+pid_t ch_p;
+int sta;
+int x;
+char *token;
+char *path;
+while (1)
+{
+printf(PROMPT);
+if (fgets(cmd, MAX_CMD_LEN, stdin) == NULL)
+{
+printf("\n");
+exit(0);
+}
+cmd[strlen(cmd) - 1] = '\0';
+x = 0;
+token = strtok(cmd, DELIM);
+while (token != NULL)
+{
+argv[i] = token;
+x++;
+token = strtok(NULL, DELIM);
+}
+argv[i] = NULL;
+if (strcmp(argv[0], "exit") == 0)
+{
+exit(0);
+}
+path = search_path(argv);
+if (path != NULL)
+{
+ch_p = fork();
+if (ch_p == -1)
+{
+perror("Error:");
+return (1);
+}
+if (ch_p == 0)
+{
+if (execve(path, argv, NULL) == -1)
+{
+perror("Error:");
+}
+exit(0);
+}
+else
+{
+wait(&sta);
+}
+}
+else
+{
+fprintf(stderr, "%s: command not found\n", argv[0]);
+}
+}
+return (0);
+}
+/**
+* search_path - Searches the PATH for an executable
+* @argv: The arguments array
+*
+* Return: The path of the executable, or NULL if not found
+*/
+char *search_path(char **argv)
+{
+char *path_env;
+char *path;
+char *token;
+char *full_path;
+path_env = _getenv("PATH");
+if (path_env == NULL)
+{
+return (NULL);
+}
+path = malloc(_strlen(path_env) + 1);
+if (path == NULL)
+{
+return (NULL);
+}
+strcpy(path, path_env);
+token = strtok(path, ":");
+while (token != NULL)
+{
+full_path = malloc(_strlen(token) + _strlen(argv[0]) + 2);
+if (full_path == NULL)
+{
+free(path);
+return (NULL);
+}
+strcpy(full_path, token);
+_strcat(full_path, "/");
+_strcat(full_path, argv[0]);
+if (access(full_path, X_OK) == 0)
+{
+free(path);
+return (full_path);
+}
+free(full_path);
+token = strtok(NULL, ":");
+}
+free(path);
+return (NULL);
+}
+/**
+* _getenv - Gets an environment variable
+* @name: The name of the environment variable
+*
+* Return: The value of the environment variable, or NULL if not found
+*/
+char *_getenv(const char *name)
+{
+extern char **environ;
+int i;
+int j;
+for (i = 0; environ[i] != NULL; i++)
+{
+for (j = 0; name[j] != '\0'; j++)
+{
+if (environ[i][j] != name[j])
+{
+break;
+}
+}
+if (environ[i][j] == '=' && name[j] == '\0')
+{
+return (&environ[i][j + 1]);
+}
+}
+return (NULL);
+}
+/**
+* _strcat - Concatenates two strings
+* @dest: The destination string
+* @src: The source string
+*
+* Return: A pointer to the destination string
+*/
+char *_strcat(char *dest, char *src)
+{
+int i;
+int j;
+for (i = 0; dest[i] != '\0'; i++)
+{
+}
+for (j = 0; src[j] != '\0'; j++)
+{
+dest[i + j] = src[j];
+}
+dest[i + j] = '\0';
+return (dest);
+}
+/**
+* _strlen - Returns the length of a string
+* @s: The string to measure
+*
+* Return: The length of the string
+*/
+int _strlen(char *s)
+{
+int i;
+for (i = 0; s[i] != '\0'; i++)
+{
+}
+return (i);
+}
